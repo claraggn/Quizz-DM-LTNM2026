@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EAU & DM : Le Grand Quizz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* couleurs relevées sur desherbagemecanique.fr */
+    --teal:#14ad88;
+    --teal-dark:#0d8a6c;
+    --teal-pale:#e3f5ef;
+    --orange:#eb5d24;
+    --orange-dark:#c94a1a;
+    --orange-pale:#fdece3;
+    --soil:#5b625e;
+    --soil-dark:#2c3330;
+    --alert:#c1272d;
+    --paper:#ffffff;
+    --paper-dim:#f5f7f8;
+    --ink:#1a1a1a;
+    --radius:10px;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    background:var(--paper-dim);
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:32px 16px 60px;
+  }
+
+  .app{
+    width:100%;
+    max-width:700px;
+  }
+
+  header.hero{
+    text-align:left;
+    margin-bottom:22px;
+    color:var(--soil-dark);
+  }
+
+  header.hero .eyebrow{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--orange);
+    margin:0 0 6px;
+  }
+
+  header.hero h1{
+    font-family:'Poppins', sans-serif;
+    font-weight:700;
+    font-size:clamp(26px, 4.6vw, 38px);
+    line-height:1.12;
+    margin:0;
+    color:var(--teal-dark);
+  }
+
+  header.hero h1 .amp{
+    color:var(--orange);
+    font-style:italic;
+  }
+
+  /* ---- gauges ---- */
+  .gauges{
+    display:flex;
+    gap:14px;
+    margin:20px 0 24px;
+    flex-wrap:wrap;
+  }
+
+  .gauge-box{
+    flex:1 1 200px;
+    background:var(--paper);
+    border:1px solid #e0e6da;
+    border-radius:var(--radius);
+    padding:12px 14px;
+    box-shadow:0 2px 6px rgba(36,48,36,0.05);
+  }
+
+  .gauge-box .label{
+    font-size:12px;
+    color:var(--soil);
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+  }
+
+  .gauge-box .label strong{
+    color:var(--ink);
+    font-weight:700;
+  }
+
+  .track{
+    height:8px;
+    border-radius:6px;
+    background:#e7ebe1;
+    overflow:hidden;
+  }
+
+  .track > div{
+    height:100%;
+    border-radius:6px;
+    transition:width .4s ease;
+  }
+
+  #progressFill{ background:linear-gradient(90deg, var(--orange), #f2a35c); }
+  #scoreFill{ background:linear-gradient(90deg, var(--teal-dark), var(--teal)); }
+
+  /* ---- card ---- */
+  .card{
+    background:var(--paper);
+    border-radius:16px;
+    padding:28px 26px 24px;
+    border:1px solid #e0e6da;
+    box-shadow:0 12px 28px rgba(36,48,36,0.08);
+  }
+
+  .card-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+  }
+
+  .q-count{
+    font-size:13px;
+    font-weight:600;
+    color:var(--soil);
+    letter-spacing:.02em;
+  }
+
+  .timer-wrap{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  .timer-ring{
+    position:relative;
+    width:44px;
+    height:44px;
+  }
+
+  .timer-ring svg{ transform:rotate(-90deg); }
+
+  .timer-ring circle{
+    fill:none;
+    stroke-width:5;
+  }
+
+  .timer-ring .bg{ stroke:rgba(0,0,0,0.1); }
+  .timer-ring .fg{ stroke:var(--teal); stroke-linecap:round; transition:stroke-dashoffset .2s linear, stroke .3s; }
+
+  .timer-num{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:700;
+    font-size:14px;
+    color:var(--soil);
+  }
+
+  .points-tag{
+    font-size:12px;
+    background:var(--teal-pale);
+    color:var(--teal-dark);
+    border-radius:20px;
+    padding:4px 10px;
+    font-weight:700;
+    white-space:nowrap;
+  }
+
+  .question-text{
+    font-family:'Poppins', sans-serif;
+    font-weight:600;
+    font-size:clamp(18px, 2.4vw, 22px);
+    line-height:1.36;
+    color:var(--ink);
+    margin:0 0 20px;
+  }
+
+  .options{
+    display:grid;
+    gap:10px;
+    margin-bottom:6px;
+  }
+
+  .opt{
+    text-align:left;
+    border:1.5px solid #dfe3e0;
+    background:#fff;
+    border-radius:10px;
+    padding:13px 16px;
+    font-size:15px;
+    font-family:inherit;
+    color:var(--ink);
+    cursor:pointer;
+    transition:border-color .15s, transform .1s, background .15s;
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .opt .letter{
+    flex:0 0 auto;
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    border:1.5px solid #c9cec9;
+    font-size:12px;
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:1px;
+  }
+
+  .opt:hover:not(:disabled){
+    border-color:var(--teal);
+    background:var(--teal-pale);
+  }
+
+  .opt:disabled{ cursor:default; }
+
+  .opt.correct{
+    border-color:var(--teal-dark);
+    background:rgba(20,173,136,0.12);
+  }
+  .opt.correct .letter{ background:var(--teal-dark); color:#fff; border-color:var(--teal-dark); }
+
+  .opt.incorrect{
+    border-color:var(--alert);
+    background:rgba(193,39,45,0.08);
+  }
+  .opt.incorrect .letter{ background:var(--alert); color:#fff; border-color:var(--alert); }
+
+  .opt.dim{ opacity:.55; }
+
+  .feedback{
+    display:none;
+    align-items:center;
+    gap:10px;
+    margin:16px 0 4px;
+    font-weight:600;
+    font-size:15px;
+  }
+  .feedback.show{ display:flex; }
+  .feedback.good{ color:var(--teal-dark); }
+  .feedback.bad{ color:var(--alert); }
+
+  .bulb-link{
+    border:none;
+    background:none;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:4px 2px;
+    font-family:inherit;
+    transition:opacity .15s;
+  }
+  .bulb-link .bulb-icon{ font-size:20px; line-height:1; }
+  .bulb-link .bulb-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--orange);
+    text-decoration:underline;
+    text-underline-offset:2px;
+  }
+  .bulb-link:hover{ opacity:.75; }
+  .bulb-link[disabled]{ opacity:.3; cursor:default; }
+
+  .explanation{
+    display:none;
+    margin-top:6px;
+    padding:14px 16px;
+    background:var(--paper-dim);
+    border-left:4px solid var(--orange);
+    border-radius:6px;
+    font-size:14px;
+    line-height:1.55;
+    color:var(--soil-dark);
+  }
+  .explanation.show{ display:block; }
+
+  .actions{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:20px;
+  }
+
+  .btn-next{
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:999px;
+    padding:11px 24px;
+    font-size:14px;
+    font-weight:700;
+    cursor:pointer;
+    display:none;
+    align-items:center;
+    gap:8px;
+  }
+  .btn-next.show{ display:inline-flex; }
+  .btn-next:hover{ background:var(--orange-dark); }
+
+  /* ---- end screen ---- */
+  .end-screen{ display:none; text-align:center; }
+  .end-screen.show{ display:block; }
+  .end-score{
+    font-family:'Poppins', sans-serif;
+    font-size:52px;
+    font-weight:700;
+    color:var(--teal-dark);
+    margin:6px 0 2px;
+  }
+  .end-total{ color:var(--soil); font-size:15px; margin-bottom:18px; }
+  .end-msg{ font-size:16px; margin-bottom:24px; color:var(--ink); line-height:1.5; }
+  .btn-restart{
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:999px;
+    padding:12px 28px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .btn-restart:hover{ background:var(--orange-dark); }
+
+  .start-screen{ text-align:left; }
+  .start-screen p{ line-height:1.6; font-size:15px; color:var(--soil); }
+  .btn-start{
+    background:var(--orange);
+    color:#fff;
+    border:none;
+    border-radius:999px;
+    padding:13px 28px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    margin-top:10px;
+  }
+  .btn-start:hover{ background:var(--orange-dark); }
+
+  .hidden{ display:none !important; }
+
+  @media (max-width:480px){
+    .card{ padding:22px 18px 20px; }
+    .gauges{ gap:10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="hero">
+    <p class="eyebrow">QUIZZ EAU & PRATIQUES AGRICOLES</p>
+    <h1>EAU <span class="amp">&</span> DM : Le Grand Quizz</h1>
+  </header>
+
+  <div class="gauges">
+    <div class="gauge-box">
+      <div class="label"><span>Avancée</span><strong id="progressLabel">0 / 13</strong></div>
+      <div class="track"><div id="progressFill" style="width:0%"></div></div>
+    </div>
+    <div class="gauge-box">
+      <div class="label"><span>Score</span><strong id="scoreLabel">0 / 32 pts</strong></div>
+      <div class="track"><div id="scoreFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+
+    <!-- START -->
+    <div class="start-screen" id="startScreen">
+      <p><strong>13 questions</strong> sur l'eau, les phytosanitaires et le désherbage mécanique. Chaque question laisse <strong>30 secondes</strong> pour répondre. Le score se remplit au fur et à mesure, et une ampoule 💡 permet de revoir l'explication dès qu'une réponse est validée.</p>
+      <button class="btn-start" id="btnStart">Démarrer le quizz</button>
+    </div>
+
+    <!-- QUESTION -->
+    <div id="quizScreen" class="hidden">
+      <div class="card-top">
+        <span class="q-count" id="qCount">Question 1/13</span>
+        <div class="timer-wrap">
+          <span class="points-tag" id="qPoints">2 pts</span>
+          <div class="timer-ring">
+            <svg width="44" height="44" viewBox="0 0 44 44">
+              <circle class="bg" cx="22" cy="22" r="19"></circle>
+              <circle class="fg" id="timerCircle" cx="22" cy="22" r="19"></circle>
+            </svg>
+            <div class="timer-num" id="timerNum">30</div>
+          </div>
+        </div>
+      </div>
+
+      <h2 class="question-text" id="questionText"></h2>
+
+      <div class="options" id="optionsWrap"></div>
+
+      <div class="feedback" id="feedback">
+        <span id="feedbackText"></span>
+        <button class="bulb-link" id="bulbBtn" title="Voir l'explication">
+          <span class="bulb-icon">💡</span>
+          <span class="bulb-label">Cliquez ici pour une explication</span>
+        </button>
+      </div>
+
+      <div class="explanation" id="explanation"></div>
+
+      <div class="actions">
+        <button class="btn-next" id="btnNext">Question suivante →</button>
+      </div>
+    </div>
+
+    <!-- END -->
+    <div class="end-screen" id="endScreen">
+      <p class="q-count" style="text-align:center;">C'est terminé !</p>
+      <div class="end-score" id="endScore">0</div>
+      <div class="end-total" id="endTotal">sur 34 points</div>
+      <div class="end-msg" id="endMsg"></div>
+      <button class="btn-restart" id="btnRestart">Rejouer</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    text: "Citez au moins 3 pratiques agricoles permettant de limiter le recours aux produits phytosanitaires et de préserver la qualité de l'eau. Laquelle de ces listes ne contient que de bonnes pratiques ?",
+    options: [
+      "Désherbage mécanique, rotation des cultures, diversification des cultures",
+      "Désherbage mécanique, traitement systématique, sol nu toute l'année",
+      "Monoculture, drainage renforcé, épandage massif",
+      "Rotation des cultures, sol nu permanent, traitement préventif généralisé"
+    ],
+    correct: 0,
+    points: 2,
+    explanation: "Il n'existe pas une solution unique ! La maîtrise des adventices et la réduction des phytos reposent sur la combinaison de plusieurs leviers agronomiques et mécaniques : désherbage mécanique, rotation des cultures, diversification des cultures, faux-semis, maintien d'un sol couvert, limitation des intrants."
+  },
+  {
+    text: "Pourquoi cherche-t-on à réduire l'utilisation des produits phytosanitaires ? Quel groupe rassemble les bonnes raisons ?",
+    options: [
+      "Santé, qualité de l'eau, biodiversité, santé des sols, maîtrise des coûts",
+      "Rendement maximal, coût réduit des phytos, simplicité d'usage",
+      "Résistance des adventices, image marketing, tradition",
+      "Rapidité de traitement, disponibilité des produits, rendement"
+    ],
+    correct: 0,
+    points: 3,
+    explanation: "Les produits phytosanitaires peuvent avoir des impacts sur la santé, les milieux aquatiques, la biodiversité et les organismes du sol. Réduire leur utilisation peut également contribuer à maîtriser les charges de l'exploitation."
+  },
+  {
+    text: "VRAI OU FAUX ? Les produits phytosanitaires peuvent être entraînés vers les rivières par la pluie lorsque les conditions d'application ne sont pas adaptées.",
+    options: ["Vrai", "Faux"],
+    correct: 0,
+    points: 1,
+    explanation: "Les produits phytosanitaires peuvent rejoindre les eaux par ruissellement ou par infiltration dans les sols. La maîtrise des conditions d'application et la limitation des transferts sont donc essentielles."
+  },
+  {
+    text: "En moyenne, en agriculture biologique, combien de passages de désherbage mécanique sont réalisés en maïs ?",
+    options: ["2 passages", "3 passages", "4 passages", "6 passages"],
+    correct: 2,
+    points: 2,
+    explanation: "4 passages sont généralement nécessaires en maïs bio : deux passages précoces en plein avec houe rotative ou herse étrille, suivis d'un ou deux passages de bineuse. Ce n'est pas une recette fixe ! Le nombre de passages dépend notamment de la météo, du sol, de la pression en adventices et de la rotation."
+  },
+  {
+    text: "En maïs, avec un itinéraire de désherbage mécanique alterné comprenant 1 seul passage mécanique suivi d'un traitement chimique, de combien peut-on réduire l'IFT en moyenne ?",
+    options: ["–10 %", "–30 %", "–50 %", "–70 %"],
+    correct: 1,
+    points: 3,
+    explanation: "Une étude menée par Agrobio 35 (2013-2020) indique qu'un seul passage de désherbage mécanique précoce permettait de réduire de 30 % l'IFT, sans impact sur le rendement dans les situations étudiées. Le Réseau GAB-FRAB indique aujourd'hui que le désherbage alterné permet de réduire les IFT de 30 à 60 % dès la première année, selon les stratégies mises en œuvre."
+  },
+  {
+    text: "Quel est le pourcentage de l'ensemble des masses d'eaux en bon état écologique en Bretagne ?",
+    options: ["15 %", "34 %", "50 %", "65 %"],
+    correct: 1,
+    points: 3,
+    explanation: "34 % de l'ensemble des masses d'eau est en « bon état écologique », soit environ 1 masse d'eau sur 3 en Bretagne."
+  },
+  {
+    text: "À quel moment faut-il intervenir pour réussir un désherbage mécanique ?",
+    options: [
+      "Quand les mauvaises herbes sont très grandes",
+      "Quand elles sont encore jeunes et petites",
+      "Après la récolte uniquement"
+    ],
+    correct: 1,
+    points: 2,
+    explanation: "On parle du stade « filament blanc » : il faut intervenir quand les adventices sont encore jeunes et petites pour que le désherbage mécanique soit efficace."
+  },
+  {
+    text: "Citez au moins 4 types de substances ou familles de produits phytosanitaires que l'on peut retrouver dans l'eau. Laquelle de ces listes est correcte ?",
+    options: [
+      "Herbicides, fongicides, insecticides, molluscicides",
+      "Herbicides, engrais azotés, phosphates, nitrates",
+      "Fongicides, sels minéraux, bactéries, virus",
+      "Insecticides, argile, sable, calcaire"
+    ],
+    correct: 0,
+    points: 2,
+    explanation: "Les familles retrouvées dans l'eau incluent notamment les herbicides, fongicides, insecticides, molluscicides, régulateurs de croissance, et les métabolites issus de la dégradation des substances. Les données de surveillance montrent l'importance des herbicides : dans les eaux souterraines, la moitié des substances identifiées en 2018 appartenaient à cette famille."
+  },
+  {
+    text: "Quelle famille de produits phytosanitaires est la plus représentée parmi ceux retrouvés dans l'eau (en 2020) ?",
+    options: ["Insecticides (18 %)", "Fongicides (21 %)", "Herbicides (45 %)", "Métabolites (13 %)"],
+    correct: 2,
+    points: 4,
+    explanation: "En 2020, la répartition était : Herbicides 45 %, Fongicides 21 %, Insecticides 18 %, Métabolites 13 %, Autres 3 %. Les pesticides les plus souvent retrouvés sont des herbicides et leurs métabolites (ex. ESA et OXA du S-métolachlore, métazachlore-ESA, analysables depuis 2017). Certains pesticides interdits depuis longtemps, comme l'atrazine depuis 2003, sont encore détectés aujourd'hui, preuve de leur persistance dans l'environnement. Source : Observatoire de l'environnement en Bretagne."
+  },
+  {
+    text: "À partir de quelle concentration de nitrates (en percentile 90) l'eau peut-elle être considérée comme trop chargée ?",
+    options: ["10 mg/L", "18 mg/L", "25 mg/L", "50 mg/L"],
+    correct: 1,
+    points: 4,
+    explanation: "Au-delà de 18 mg/L en percentile 90, les masses d'eau superficielles sont considérées comme subissant ou susceptibles de subir une eutrophisation. Ce seuil réglementaire est utilisé pour identifier les eaux contribuant à l'eutrophisation des eaux douces, estuariennes et côtières."
+  },
+  {
+    text: "Comment s'appelle le phénomène d'enrichissement excessif de l'eau en nutriments (azote, phosphore) qui favorise les proliférations d'algues ?",
+    options: ["L'acidification", "L'eutrophisation", "La salinisation", "La sédimentation"],
+    correct: 1,
+    points: 2,
+    explanation: "Ce phénomène s'appelle l'eutrophisation : un enrichissement excessif de l'eau en nutriments, notamment en azote et en phosphore, qui favorise les proliférations d'algues."
+  },
+  {
+    text: "Jusqu'à quelle concentration en phosphore total considère-t-on qu'une masse d'eau est en bon état écologique ?",
+    options: ["0,1 mg/L", "0,2 mg/L", "0,5 mg/L", "1 mg/L"],
+    correct: 1,
+    points: 3,
+    explanation: "Au-delà de 0,2 mg/L, le seuil du bon état écologique est dépassé. Un excès de phosphore peut favoriser la prolifération des algues et des végétaux dans l'eau (eutrophisation), pouvant entraîner une diminution de l'oxygène dans l'eau et perturber les écosystèmes aquatiques."
+  },
+  {
+    text: "Citez 4 outils de désherbage mécanique. Laquelle de ces listes est correcte ?",
+    options: [
+      "Herse étrille, houe rotative, rotoétrille, bineuse",
+      "Pulvérisateur, herse étrille, semoir, charrue",
+      "Bineuse, épandeur d'engrais, rouleau Cambridge, semoir",
+      "Houe rotative, pulvérisateur, moissonneuse, charrue"
+    ],
+    correct: 0,
+    points: 1,
+    explanation: "Les 4 outils de désherbage mécanique cités sont : la herse étrille, la houe rotative, la rotoétrille et la bineuse."
+  }
+];
+
+const TOTAL_POINTS = QUESTIONS.reduce((s,q)=>s+q.points,0);
+const TIME_LIMIT = 30;
+
+let current = 0;
+let score = 0;
+let timer = null;
+let timeLeft = TIME_LIMIT;
+let answered = false;
+
+const $ = id => document.getElementById(id);
+
+$('scoreLabel').textContent = `0 / ${TOTAL_POINTS} pts`;
+
+$('btnStart').addEventListener('click', () => {
+  $('startScreen').classList.add('hidden');
+  $('quizScreen').classList.remove('hidden');
+  loadQuestion();
+});
+
+$('btnRestart').addEventListener('click', () => {
+  current = 0; score = 0; answered = false;
+  $('endScreen').classList.remove('show');
+  $('quizScreen').classList.remove('hidden');
+  updateGauges();
+  loadQuestion();
+});
+
+$('btnNext').addEventListener('click', () => {
+  current++;
+  if(current >= QUESTIONS.length){
+    finishGame();
+  } else {
+    loadQuestion();
+  }
+});
+
+$('bulbBtn').addEventListener('click', () => {
+  $('explanation').classList.toggle('show');
+});
+
+function loadQuestion(){
+  answered = false;
+  const q = QUESTIONS[current];
+  $('qCount').textContent = `Question ${current+1}/${QUESTIONS.length}`;
+  $('qPoints').textContent = `${q.points} pt${q.points>1?'s':''}`;
+  $('questionText').textContent = q.text;
+  $('feedback').classList.remove('show');
+  $('explanation').classList.remove('show');
+  $('explanation').textContent = q.explanation;
+  $('btnNext').classList.remove('show');
+  $('bulbBtn').disabled = true;
+
+  const wrap = $('optionsWrap');
+  wrap.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.addEventListener('click', () => selectAnswer(i));
+    wrap.appendChild(btn);
+  });
+
+  updateGauges();
+  startTimer();
+}
+
+function startTimer(){
+  clearInterval(timer);
+  timeLeft = TIME_LIMIT;
+  const circle = $('timerCircle');
+  const r = 19;
+  const circumference = 2 * Math.PI * r;
+  circle.style.strokeDasharray = circumference;
+  circle.style.strokeDashoffset = 0;
+  $('timerNum').textContent = timeLeft;
+  circle.style.stroke = 'var(--teal)';
+
+  timer = setInterval(() => {
+    timeLeft -= 0.1;
+    if(timeLeft <= 0){
+      timeLeft = 0;
+      clearInterval(timer);
+      selectAnswer(-1); // timeout
+    }
+    const ratio = timeLeft / TIME_LIMIT;
+    circle.style.strokeDashoffset = circumference * (1 - ratio);
+    $('timerNum').textContent = Math.ceil(timeLeft);
+    if(ratio < 0.33) circle.style.stroke = 'var(--alert)';
+    else if(ratio < 0.6) circle.style.stroke = 'var(--orange)';
+  }, 100);
+}
+
+function selectAnswer(idx){
+  if(answered) return;
+  answered = true;
+  clearInterval(timer);
+
+  const q = QUESTIONS[current];
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach((btn, i) => {
+    btn.disabled = true;
+    if(i === q.correct) btn.classList.add('correct');
+    else if(i === idx) btn.classList.add('incorrect');
+    else btn.classList.add('dim');
+  });
+
+  const fb = $('feedback');
+  const fbText = $('feedbackText');
+  fb.classList.add('show');
+  if(idx === q.correct){
+    score += q.points;
+    fb.classList.remove('bad'); fb.classList.add('good');
+    fbText.textContent = `Bonne réponse ! +${q.points} pt${q.points>1?'s':''}`;
+  } else if(idx === -1){
+    fb.classList.remove('good'); fb.classList.add('bad');
+    fbText.textContent = `Temps écoulé — la bonne réponse est surlignée.`;
+  } else {
+    fb.classList.remove('good'); fb.classList.add('bad');
+    fbText.textContent = `Pas tout à fait — la bonne réponse est surlignée.`;
+  }
+
+  $('bulbBtn').disabled = false;
+  $('btnNext').classList.add('show');
+  $('btnNext').textContent = (current === QUESTIONS.length - 1) ? 'Voir mon résultat →' : 'Question suivante →';
+
+  updateGauges();
+}
+
+function updateGauges(){
+  const doneCount = answered ? current + 1 : current;
+  $('progressLabel').textContent = `${doneCount} / ${QUESTIONS.length}`;
+  $('progressFill').style.width = `${(doneCount/QUESTIONS.length)*100}%`;
+  $('scoreLabel').textContent = `${score} / ${TOTAL_POINTS} pts`;
+  $('scoreFill').style.width = `${(score/TOTAL_POINTS)*100}%`;
+}
+
+function finishGame(){
+  clearInterval(timer);
+  $('quizScreen').classList.add('hidden');
+  $('endScreen').classList.add('show');
+  $('endScore').textContent = score;
+  $('endTotal').textContent = `sur ${TOTAL_POINTS} points`;
+
+  const pct = score / TOTAL_POINTS;
+  let msg;
+  if(pct >= 0.85) msg = "Expert(e) de l'eau et du désherbage mécanique ! Ces sujets n'ont plus de secret pour vous.";
+  else if(pct >= 0.6) msg = "Belle performance : les grands principes sont acquis, quelques détails restent à affiner.";
+  else if(pct >= 0.35) msg = "Un bon début ! Les bases sont là, une petite révision affûtera le reste.";
+  else msg = "Le quizz est corsé — n'hésitez pas à rejouer et à consulter les explications 💡 pour progresser.";
+  $('endMsg').textContent = msg;
+}
+</script>
+</body>
+</html>
